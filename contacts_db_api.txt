@@ -1,0 +1,123 @@
+
+
+fastapi_accounting/
+│
+├── app/
+│   ├── main.py
+│   ├── core/
+│   ├── models/
+│   ├── routes/
+│   ├── services/
+│   └── schemas/
+│
+├── tests/
+├── alembic/
+├── requirements.txt
+├── .env
+├── .gitignore
+└── README.md
+
+
+
+Contacts API:
+	- Create a new contact
+	- Update an existing contact (Partial)
+	- List all the contacts
+	- List contact by ID
+	- Delete an existing contact
+	
+
+Users Type: ADMIN, STAFF, USER
+
+Create a new contact:
+
+Contacts: Name, Age, phone, Email, City, Company, Description, websites, other links, comments
+Request Payload:
+
+{
+	"name" : "Ibrahim",  # Mandatory, String, Length (Upto 120 Characters) 
+	"age": 35, # Optional, Integer, Age Range (15 to 100)
+	"phone": "8123458001" # Conditional-Mandatory, String, 10to14 characters, Optional if email is provided
+	"email": "ibrahim.sma1990@gmail.com" # Conditional-Mandatory, String, Length (Upto 120 Characters), Optional if mobile is provided
+	"city": "Bangalore" # Optional, String, Length (Upto 120 Characters)
+	"company": "Fortune Media", # Optional, String, Length (Upto 120 Characters)
+	"designation": "Digital Ops & Marketing Head",  # Optional, String, Length (Upto 120 Characters)
+	"description": "Ibrahim holds an important position in FMTC and is handling",  # Optional, String, Length (Upto 300 Characters)
+	"website": "", # Optional, String, Length (Upto 120 Characters)
+	"socialLinks": {
+		"facebook": "", # Optional, String, Length (Upto 120 Characters)
+		"linkedIn": "", # Optional, String, Length (Upto 120 Characters)
+		"twitter": "", # Optional, String, Length (Upto 120 Characters)
+		"instagram": "", # Optional, String, Length (Upto 120 Characters)
+		"youtube": "" # Optional, String, Length (Upto 120 Characters)
+	},
+	"comments": "", # Optional, String, Length (Upto 120 Characters)
+	"others": {
+		"secondaryEmail": "",
+		"secondaryMobile": "",
+		"secondaryAddress": ""
+	}
+}
+
+Response Payload:
+201 Created:
+
+{
+	"id": "cnt_9f82d1c3",
+	
+	
+
+}
+
+
+
+
+
+List contact by ID
+
+{
+  "id": "cnt_9f82d1c3",
+  "name": "Ibrahim",
+  "age": 35,
+  "phone": "+918123458001",
+  "email": "ibrahim.sma1990@gmail.com",
+  "designation": "Digital Ops & Marketing Head",
+  "company": "Fortune Media",
+  "industry": "Media & Advertising",
+  "businessType": "B2B",
+
+  "address": {
+    "city": "Bangalore",
+    "state": "Karnataka",
+    "country": "India"
+  },
+
+  "website": "https://fortunemedia.com",
+
+  "socialLinks": {
+    "linkedIn": "https://linkedin.com/in/ibrahim"
+  },
+
+  "leadStatus": "Qualified",
+  "leadSource": "Outdoor Campaign",
+  "priority": "High",
+
+  "tags": ["Media", "Decision Maker"],
+
+  "communicationPreferences": {
+    "email": true,
+    "whatsapp": true
+  },
+
+  "consent": {
+    "given": true,
+    "date": "2025-01-05",
+    "method": "Website"
+  },
+
+  "notes": [],
+  "createdAt": "2025-01-05T09:15:00Z",
+  "updatedAt": "2025-01-05T10:45:00Z",
+  "isActive": true
+}
+
