@@ -1,0 +1,433 @@
+
+FastAPI Accounting Software:
+
+accounting_app/
+├── main.py
+├── database.py
+├── models.py
+├── auth.py
+├── routes/
+│   ├── users.py
+│   ├── transactions.py
+├── templates/
+│   ├── login.html
+│   ├── dashboard.html
+└── static/
+
+
+Chatgpt:
+https://chatgpt.com/share/693e9876-cd80-8005-9076-72c9f9a19ea9
+
+
+PHASE 1 — Prerequisites (ABSOLUTE BASICS)
+	- System Requirements: Python
+	- Code Editor (Choose One): VSCode
+	- Basic Python Knowledge
+	
+PHASE 2 — Project Setup (FIRST REAL ACTION)
+	- Step 1: Create a Project Folder: fastapi_accounting
+	- Step 2: Open Folder in VS Code: Open VS Code → File → Open Folder → Select fastapi_accounting
+	- Step 3: Create Virtual Environment (VERY IMPORTANT)
+	- Activate virtual environment: venv\Scripts\activate
+
+	# Switch to your project folder
+	Set-Location 'C:\Users\Admin1\Downloads\JobHunt2025-26\fastapi_accounting' Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force .\venv\Scripts\Activate.ps1
+	
+PHASE 3 — Install FastAPI (Our First Dependency)
+	- Step 1: Install FastAPI + Uvicorn: pip install fastapi uvicorn
+	- Step 2: Verify Installation: pip list
+	
+PHASE 4 — Create Your First FastAPI App (HELLO WORLD)
+	- Step 1: Create main.py
+	- Step 2: Write Minimal Code:
+		from fastapi import FastAPI
+		app = FastAPI()
+		@app.get("/")
+		def root():
+			return {"message": "FastAPI is working!"}
+	- Step 3: Run the Server: uvicorn main:app --reload
+	- Step 4: Test in Browser: http://127.0.0.1:8000
+	{"message":"FastAPI is working!"}
+
+PHASE 5 — Understand Swagger (FastAPI SUPERPOWER)
+	- Step 1: Open Swagger UI: http://127.0.0.1:8000/docs
+	- Step 2: Try the API in Postman (GET /)
+
+PHASE 6 — Understanding APIs & HTTP Methods (FOUNDATION)
+	- 6.1 What is an API? (Plain English): 
+		An API endpoint is a URL that performs one specific action When someone calls it. Eg. GET /transactions
+	- 6.2 HTTP Methods (Only 4 You Really Need):
+		Method			Meaning			Example
+		GET				Read data		Get transactions
+		POST			Create data		Add expense
+		PUT				Update data		Edit expense
+		DELETE			Remove data		Delete expense
+	- 6.3 Create a Simple GET API (Read Data):
+		@app.get("/hello")
+		def say_hello():
+			return {"message": "Hello from FastAPI"}
+	- 6.4 Understanding POST (Sending Data to Server):
+		POST is used when: You send data Server processes it Usually creates something
+		Eg. “Add an expense of ₹500 for food”
+	- 6.5 POST API WITHOUT Validation (First Step): Add below code to main.py
+		from fastapi import Body
+		@app.post("/echo")
+		def echo_data(data: dict = Body(...)):
+			return {
+				"you_sent": data
+			}
+	- 6.6 Test POST Using Swagger: Find POST /echo & Try it out with 
+		{
+		  "name": "Ibrahim",
+		  "amount": 500
+		}
+	- 6.7 Why This Is Not Enough (Problem):
+		Right now: Any data is accepted, No validation, Wrong types allowed
+	- 6.8 Enter Pydantic (Data Validation):
+		FastAPI uses Pydantic models to define exact data shape. This is a huge advantage.
+	- 6.9 Create a Data Model (VERY IMPORTANT):
+		from pydantic import BaseModel
+		class Transaction(BaseModel):
+			type: str
+			amount: float
+			description: str
+	- 6.10 POST API With Validation (BEST PRACTICE):
+		@app.post("/transaction")
+		def create_transaction(transaction: Transaction):
+			return {
+				"status": "success",
+				"data": transaction
+			}
+	- 6.11 Test Correct Data: 
+		{
+		  "type": "expense",
+		  "amount": 1200,
+		  "description": "Office supplies"
+		}
+	- 6.12 Test WRONG Data (Learn This Well)
+		{
+		  "type": "expense",
+		  "amount": "twelve hundred",
+		  "description": "Office supplies"
+		}
+		FastAPI responds with: 422 Validation Error. Here amount should be in Float values not string.
+	
+PHASE 7 — Organizing Code Properly (PRODUCTION MINDSET)
+	- In this phase, we will: Clean up the structure, Make code readable, Prepare for authentication & database
+	
+	- 7.1 Why Project Structure Matters: Easy to code, maintain & implement
+	- 7.2 Target Folder Structure (Simple & Clean):
+		fastapi_accounting/
+		│
+		├── app/
+		│   ├── main.py
+		│   ├── routes/
+		│   │   └── transactions.py
+		│   ├── models/
+		│   │   └── transaction.py
+		│   └── core/
+		│       └── config.py
+		│
+		├── venv/
+		└── requirements.txt
+	- 7.3 Step 1: Create app Folder:
+	- 7.4 Step 2: Move main.py: app/main.py
+		Update your run command: uvicorn app.main:app --reload
+		Verify http://127.0.0.1:8000 is working
+	- 7.5 Step 3: Create Routes Folder & add transactions.py file:  apps->routes/transactions.py 
+	- 7.6 Move Transaction APIs to Routes: app/routes/transactions.py
+		from fastapi import APIRouter
+		from pydantic import BaseModel
+		router = APIRouter()
+		class Transaction(BaseModel):
+			type: str
+			amount: float
+			description: str
+		@router.post("/transaction")
+		def create_transaction(transaction: Transaction):
+			return {
+				"status": "success",
+				"data": transaction
+			}
+	- 7.7 Register Routes in Main App: app/main.py
+		from fastapi import FastAPI
+		from app.routes import transactions
+
+		app = FastAPI()
+
+		app.include_router(transactions.router)
+
+		@app.get("/")
+		def root():
+			return {"message": "FastAPI is running"}
+	- 7.8 Test Again in Swagger: http://127.0.0.1:8000/docs
+	- 7.9 Why This Is a Big Win: You just learned: ✔ Modular code ✔ Route separation ✔ Clean structure ✔ Scalable design
+
+PHASE 8 — Configuration & Environment Variables (CRITICAL FOUNDATION)
+	This phase is often skipped by beginners — but never in real systems.
+	
+	pip install pydantic_settings (Note: Chatgpt link has incorrect step, where it is giving the import as 
+	from pydantic import BaseSettings (this is deprecated and is not supported anymore)
+	
+	- 8.1 What is Configuration?
+		Configuration = values that: Change between environments, Should NOT be hardcoded
+		Examples: App name, Secret keys, Database URL, Debug mode
+	- 8.2 Why Environment Variables?
+		Using environment variables is good ✅: More secure, Flexible, Industry standard
+	- 8.3 Create config.py: 
+		from pydantic_settings import BaseSettings
+		class Settings(BaseSettings):
+			app_name: str = "Accounting App"
+			debug: bool = True
+		settings = Settings()
+		
+		BaseSettings - Reads env variables
+	- 8.4 Define App Settings: app/core/config.py
+		from pydantic import BaseSettings
+		class Settings(BaseSettings):
+			app_name: str = "Accounting App"
+			debug: bool = True
+		settings = Settings()
+	- 8.5 Use Config in Main App: app/main.py
+		from app.core.config import settings
+		app = FastAPI(title=settings.app_name)	
+	- 8.6 Test It: uvicorn app.main:app --reload
+	- 8.7 Override Config Using Environment Variables: (Issue in this block)
+		This needs to be added inside section 8.4 code block for app to work
+		class Config:
+			env_prefix = ""   # allows APP_NAME → app_name
+		
+		Temporarily set env variable:
+			$env:APP_NAME="FMTC Accounting"
+			uvicorn app.main:main --reload
+		(or) setting to windows environment variable: setx APP_NAME "FMTC Accounting"
+	
+		echo $env:APP_NAME  # This command will display the environment variable stored
+
+PHASE 9 — Database Basics + SQLite Setup (FOUNDATION)
+	- 9.1 What Is a Database? (Plain English): 
+		A database is: A structured place to store data permanently
+		Right now: When server restarts → data is lost ❌
+		After DB: Data survives restarts ✅
+	- 9.2 Why SQLite First?
+		SQLite is: ✔ File-based ✔ Zero setup ✔ Perfect for 5 users ✔ Easy to migrate later
+	- 9.3 Install Database Libraries:
+		pip install sqlalchemy, alembic
+	- 9.4 Create Database Module: app/database.py
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker, declarative_base
+        DATABASE_URL = "sqlite:///./accounts.db"
+        engine = create_engine(
+            DATABASE_URL,
+            connect_args={"check_same_thread": False}
+        )
+        SessionLocal = sessionmaker(
+            autocommit=False,
+            autoflush=False,
+            bind=engine
+        )
+        Base = declarative_base()
+    - 9.5 What Each Part Does (Important)
+        Item	Purpose
+        engine	DB connection
+        SessionLocal	DB session
+        Base	Table base class
+    - 9.6 Create Transaction Table (Model): app/models/transaction.py
+        from sqlalchemy import Column, Integer, String, Float
+        from app.database import Base
+        class Transaction(Base):
+            __tablename__ = "transactions"
+            id = Column(Integer, primary_key=True, index=True)
+            type = Column(String, index=True)
+            amount = Column(Float)
+            description = Column(String)
+    - 9.7 Create Tables Automatically: Update app/main.py
+        from fastapi import FastAPI
+        from app.routes import transactions
+        from app.database import Base, engine
+        from app.models import transaction
+        from app.core.config import settings
+        Base.metadata.create_all(bind=engine)
+        app = FastAPI(title=settings.app_name)
+        app.include_router(transactions.router)
+    - 9.8 Connect API to Database: app/routes/transactions.py
+        from fastapi import APIRouter, Depends
+        from sqlalchemy.orm import Session
+        from pydantic import BaseModel
+
+        from app.database import SessionLocal
+        from app.models.transaction import Transaction
+
+        router = APIRouter()
+
+        class TransactionCreate(BaseModel):
+            type: str
+            amount: float
+            description: str
+
+        def get_db():
+            db = SessionLocal()
+            try:
+                yield db
+            finally:
+                db.close()
+
+        @router.post("/transaction")
+        def create_transaction(
+            transaction: TransactionCreate,
+            db: Session = Depends(get_db)
+        ):
+            db_transaction = Transaction(
+                type=transaction.type,
+                amount=transaction.amount,
+                description=transaction.description
+            )
+            db.add(db_transaction)
+            db.commit()
+            db.refresh(db_transaction)
+            return db_transaction
+
+PHASE 10 — Reading Data (GET APIs) + Basic Reports
+    - 10.1 Add GET API to List Transactions: 
+        @router.get("/transactions")
+        def list_transactions(db: Session = Depends(get_db)):
+            transactions = db.query(Transaction).all()
+            return transactions
+    - 10.2 Test It: Call GET /transactions (Using Swagger docs)
+        I also have added get/update/list/delete transactions by ID (not part of AI help)
+    - 10.3 Add Simple Accounting Summary:
+        @router.get("/summary")
+        def transaction_summary(db: Session = Depends(get_db)):
+            income = db.query(Transaction).filter(Transaction.type == "income").all()
+            expense = db.query(Transaction).filter(Transaction.type == "expense").all()
+
+            total_income = sum(t.amount for t in income)
+            total_expense = sum(t.amount for t in expense)
+
+            return {
+                "total_income": total_income,
+                "total_expense": total_expense,
+                "balance": total_income - total_expense
+            }
+    - 10.4 Test Summary: Call GET /summary (Using Swagger docs)
+
+PHASE 11 — User Authentication (Logins, Passwords, Roles)
+    - 11.1 How Authentication Will Work (Big Picture):
+        User → Login API → JWT Token → Access protected APIs
+    - 11.2 Install Security Dependencies:
+        pip install passlib[bcrypt] python-jose
+        Package	        Purpose
+        passlib	        Password hashing
+        bcrypt	        Secure hashing algorithm
+        python-jose	    JWT tokens
+    - 11.3 Create User Model (Database Table): app/models/user.py
+        from sqlalchemy import Column, Integer, String, Boolean
+        from app.database import Base
+
+        class User(Base):
+            __tablename__ = "users"
+
+            id = Column(Integer, primary_key=True, index=True)
+            username = Column(String, unique=True, index=True)
+            password_hash = Column(String)
+            role = Column(String, default="staff")
+            is_active = Column(Boolean, default=True)
+    - 11.4 Create Password Utility: Create file: app/core/security.py
+        Note: This block is resolved after initial code from chatgpt section 11.4 failed
+        from passlib.context import CryptContext
+        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        MAX_PASSWORD_LENGTH = 72
+        def normalize_password(password: str) -> str:
+            """
+            bcrypt supports max 72 bytes.
+            We safely trim AFTER encoding.
+            """
+            password_bytes = password.encode("utf-8")
+            return password_bytes[:MAX_PASSWORD_LENGTH].decode("utf-8", errors="ignore")
+        def hash_password(password: str) -> str:
+            normalized = normalize_password(password)
+            return pwd_context.hash(normalized)
+        def verify_password(password: str, hashed: str) -> bool:
+            normalized = normalize_password(password)
+            return pwd_context.verify(normalized, hashed)
+    - 11.5 Create JWT Utility: Update app/core/config.py
+        secret_key: str = "CHANGE_THIS_SECRET"
+        algorithm: str = "HS256"
+        access_token_expire_minutes: int = 60
+
+        - Create new file: app/core/jwt.py
+        from datetime import datetime, timedelta
+        from jose import jwt
+        from app.core.config import settings, secret_key, algorithm, access_token_expire_minutes
+
+        def create_access_token(data: dict):
+            to_encode = data.copy()
+            expire = datetime.utcnow() + timedelta(
+                minutes=settings.access_token_expire_minutes
+            )
+            to_encode.update({"exp": expire})
+            return jwt.encode(
+                to_encode,
+                settings.secret_key,
+                algorithm=settings.algorithm
+            )
+    - 11.6 Create Auth Routes: Create new file (app/routes/auth.py)
+        from fastapi import APIRouter, Depends, HTTPException
+        from sqlalchemy.orm import Session
+        from pydantic import BaseModel
+        from app.database import SessionLocal
+        from app.models.user import User
+        from app.core.security import hash_password, verify_password
+        from app.core.jwt import create_access_token
+
+        router = APIRouter(prefix="/auth", tags=["Auth"])
+        class UserCreate(BaseModel):
+            username: str
+            password: str
+            role: str = "staff"
+        class LoginRequest(BaseModel):
+            username: str
+            password: str
+        def get_db():
+            db = SessionLocal()
+            try:
+                yield db
+            finally:
+                db.close()
+        @router.post("/register")
+        def register(user: UserCreate, db: Session = Depends(get_db)):
+            db_user = User(
+                username=user.username,
+                password_hash=hash_password(user.password),
+                role=user.role
+            )
+            db.add(db_user)
+            db.commit()
+            return {"message": "User created"}
+        @router.post("/login")
+        def login(data: LoginRequest, db: Session = Depends(get_db)):
+            user = db.query(User).filter(User.username == data.username).first()
+            if not user or not verify_password(data.password, user.password_hash):
+                raise HTTPException(status_code=401, detail="Invalid credentials")
+            token = create_access_token({
+                "sub": user.username,
+                "role": user.role
+            })
+            return {"access_token": token, "token_type": "bearer"}
+    - 11.7 Register Auth Routes: Update app/main.py
+        from app.routes import transactions, auth
+        app.include_router(auth.router)
+    - 11.8 Test Authentication (Swagger): POST /auth/register
+        Step 1: Register User
+            {
+            "username": "admin",
+            "password": "admin123",
+            "role": "admin"
+            }
+        Step 2: Login (POST /auth/login)
+            {
+            "access_token": "eyJhbGciOiJIUzI1NiIs...",
+            "token_type": "bearer"
+            }
+    - 11.9 Protect APIs (Authorization):
+        Create dependency: app/core/dependencies.py
